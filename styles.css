@@ -1,0 +1,28 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.active {
+    color: red;
+}
+
+.nav-link:hover {
+    color: red;
+}
+
+.audio-instructions {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.audio-button {
+    margin: 5px;
+    cursor: pointer;
+}
+
+.audio-button:hover {
+    opacity: 0.8;
+}
