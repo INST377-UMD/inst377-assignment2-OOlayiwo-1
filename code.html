@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INST377 - Activities</title>
+
+    
+
+
+<style> /* internal css due to issues and lack of time to seperate it*/
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .active {
+            color: #ffdb58;
+        }
+        .audio-instructions {
+            background-color: #f5f5f5;
+            border: 2px solid #ccc;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .audio-button {
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s;
+        }
+        .audio-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            opacity: 0.9;
+        }
+    </style> 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-slider-js@2.6.0/dist/simple-slider.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/simple-slider-js@2.6.0/dist/simple-slider.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200">
+    <header class="bg-gradient-to-r from-red-500 to-red-600 text-white py-6 shadow-md rounded-b-lg">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-semibold text-center tracking-wide">INST377 - Activities</h1>
+        </div>
+    </header>
+    <nav class="bg-white/80 backdrop-blur-md py-4 shadow-sm rounded-t-lg">
+        <div class="container mx-auto px-4">
+            <ul class="flex justify-center space-x-6">
+                <li id="home-link" class="nav-link text-blue-600 hover:text-blue-800 transition-colors duration-300 cursor-pointer active font-semibold text-lg">Home</li>
+                <li id="stocks-link" class="nav-link text-green-600 hover:text-green-800 transition-colors duration-300 cursor-pointer font-semibold text-lg">Stocks</li>
+                <li id="dogs-link" class="nav-link text-purple-600 hover:text-purple-800 transition-colors duration-300 cursor-pointer font-semibold text-lg">Dogs</li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-10">
+        <section id="home-page" class="page-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">What would you like to do? Explore!</h2>
+            <div class="flex justify-center space-x-6 mb-8">
+                <button id="stocks-button" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Stocks</button>
+                <button id="dogs-button" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Dogs</button>
+            </div>
+            <div id="quote-container" class="bg-white/90 backdrop-blur-md border border-gray-200 p-6 rounded-xl shadow-lg mb-6">
+                <h3 class="font-semibold mb-3 text-gray-700 text-lg">Quote of the day</h3>
+                <p id="quote-text" class="text-gray-800 italic text-md">"The best way to predict the future is to invent it." - Alan Kay</p>
+            </div>
+        </section>
+
+        <section id="stocks-page" class="page-section hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Let's check out some stocks!</h2>
+            <div class="flex justify-center space-x-6 mb-8">
+                <select id="time-frame" class="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300">
+                    <option value="30">30 Days</option>
+                    <option value="60">60 Days</option>
+                    <option value="90">90 Days</option>
+                </select>
+                <input type="text" id="stock-ticker" placeholder="Enter Stock Ticker" class="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 w-64">
+                <button id="lookup-button" class="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Lookup</button>
+            </div>
+            <div class="chart-container mb-8 bg-white/90 backdrop-blur-md rounded-xl p-4 shadow-md">
+                <canvas id="stock-chart" width="400" height="200"></canvas>
+            </div>
+            <div class="reddit-data bg-white/90 backdrop-blur-md p-6 rounded-xl shadow-lg">
+                <h3 class="font-semibold mb-4 text-lg text-gray-700">Top 5 Stocks on Reddit</h3>
+                <table class="min-w-full border rounded-md shadow-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comment Count</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sentiment</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reddit-table-body" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">Loading Data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="dogs-page" class="page-section hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Dogs!</h2>
+            <div id="dog-carousel" class="relative w-full overflow-hidden rounded-xl shadow-lg mb-6 bg-white/90 backdrop-blur-md">
+                <div id="dog-image-container" class="relative h-72 bg-gray-300">
+                </div>
+            </div>
+            <div id="dog-breed-buttons" class="flex flex-wrap justify-center gap-3 mb-6">
+            </div>
+            <div id="dog-info-container" class="hidden bg-white/90 backdrop-blur-md border border-gray-200 p-6 rounded-xl shadow-lg">
+                <h3 id="dog-breed-name" class="text-2xl font-semibold mb-3 text-gray-800"></h3>
+                <p id="dog-breed-description" class="text-gray-700 text-lg mb-3"></p>
+                <p id="dog-breed-life" class="text-gray-700 text-lg"></p>
+            </div>
+        </section>
+
+        <div class="audio-instructions bg-white/90 backdrop-blur-md border border-gray-200 p-6 rounded-xl shadow-lg">
+            <h3 class="font-semibold mb-3 text-lg text-gray-700">You can navigate the web page using audio!</h3>
+            <p class="mb-3 text-gray-600">Make sure your mic is on to be able to use it</p>
+            <ul class="list-disc list-inside mb-4 text-gray-600">
+                <li>Navigate to a Different Page: Say "Navigate to &lt;page&gt;" (e.g., "Navigate to Home")</li>
+                <li>Change the Page Color: Say "Change the color to &lt;color&gt;" (e.g., "Change the color to blue")</li>
+                <li>Say Hello: Say "Hello"</li>
+                <li id="stocks-audio-instruction" class="hidden">Lookup Stock: Say "Lookup &lt;stock_ticker&gt;" (e.g., "Lookup AAPL")</li>
+                <li id="dogs-audio-instruction" class="hidden">Load Dog Breed: Say "Load Dog Breed &lt;dog_breed&gt;" (e.g., "Load Dog Breed Poodle")</li>
+            </ul>
+            <div class="flex justify-center">
+                <button id="turn-on-listening" class="audio-button bg-gradient-to-r from-green-500 to-green-600 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Turn On Listening</button>
+                <button id="turn-off-listening" class="audio-button bg-gradient-to-r from-red-500 to-red-600 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Turn Off Listening</button>
+            </div>
+        </div>
+    </main>
+
+    
+    
+    
+    
+    
+    
+
+<script> /* js and packages */
+        const homeLink = document.getElementById('home-link');
+        const stocksLink = document.getElementById('stocks-link');
+        const dogsLink = document.getElementById('dogs-link');
+        const homePage = document.getElementById('home-page');
+        const stocksPage = document.getElementById('stocks-page');
+        const dogsPage = document.getElementById('dogs-page');
+        const stocksButton = document.getElementById('stocks-button');
+        const dogsButton = document.getElementById('dogs-button');
+        const quoteText = document.getElementById('quote-text');
+        const timeFrameSelect = document.getElementById('time-frame');
+        const stockTickerInput = document.getElementById('stock-ticker');
+        const lookupButton = document.getElementById('lookup-button');
+        const stockChartCtx = document.getElementById('stock-chart').getContext('2d');
+        const redditTableBody = document.getElementById('reddit-table-body');
+        const dogImageContainer = document.getElementById('dog-image-container');
+        const dogBreedButtonsContainer = document.getElementById('dog-breed-buttons');
+        const dogInfoContainer = document.getElementById('dog-info-container');
+        const dogBreedNameDisplay = document.getElementById('dog-breed-name');
+        const dogBreedDescriptionDisplay = document.getElementById('dog-breed-description');
+        const dogBreedLifeDisplay = document.getElementById('dog-breed-life');
+        const turnOnListeningButton = document.getElementById('turn-on-listening');
+        const turnOffListeningButton = document.getElementById('turn-off-listening');
+        const stocksAudioInstruction = document.getElementById('stocks-audio-instruction');
+        const dogsAudioInstruction = document.getElementById('dogs-audio-instruction');
+
+        let stockChart;
+        let dogImages = [];
+        let currentDogIndex = 0;
+        let annyangInstance;
+
+        function showPage(pageId) {
+            homePage.classList.add('hidden');
+            stocksPage.classList.add('hidden');
+            dogsPage.classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
+
+            /* navigation links*/
+            homeLink.classList.remove('active');
+            stocksLink.classList.remove('active');
+            dogsLink.classList.remove('active');
+            if (pageId === 'home-page') {
+                homeLink.classList.add('active');
+                stocksAudioInstruction.classList.add('hidden');
+                dogsAudioInstruction.classList.add('hidden');
+            } else if (pageId === 'stocks-page') {
+                stocksLink.classList.add('active');
+                stocksAudioInstruction.classList.remove('hidden');
+                dogsAudioInstruction.classList.add('hidden');
+            } else if (pageId === 'dogs-page') {
+                dogsLink.classList.add('active');
+                stocksAudioInstruction.classList.add('hidden');
+                dogsAudioInstruction.classList.remove('hidden');
+            }
+        }
+
+        homeLink.addEventListener('click', () => showPage('home-page'));
+        stocksLink.addEventListener('click', () => showPage('stocks-page'));
+        dogsLink.addEventListener('click', () => showPage('dogs-page'));
+        stocksButton.addEventListener('click', () => showPage('stocks-page'));
+        dogsButton.addEventListener('click', () => showPage('dogs-page'));
+
+        showPage('home-page');
+/* fetching data*/
+        function fetchQuote() {
+            fetch('https://zenquotes.io/api/random')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        quoteText.textContent = `"${data[0].q}" - ${data[0].a}`;
+                    } else {
+                        quoteText.textContent = "Failed to fetch quote.";
+                    }
+                })
+                .catch(error => console.error('Error fetching quote:', error));
+        }
+
+        fetchQuote();
+
+        function createStockChart(data, title) {
+            if (stockChart) {
+                stockChart.destroy();
+            }
+
+            const dates = data.map(item => new Date(item.t).toLocaleDateString());
+            const prices = data.map(item => item.c);
+
+            stockChart = new Chart(stockChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: title,
+                        data: prices,
+                        borderColor: '#86ef7d',
+                        backgroundColor: 'rgba(134, 239, 125, 0.2)',
+                        fill: true,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#4a5568',
+                                font: {
+                                    size: 14,
+                                    family: 'Inter'
+                                }
+                            },
+                            ticks: {
+                                color: '#718096',
+                                font: {
+                                    size: 12,
+                                    family: 'Inter'
+                                }
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Price (USD)',
+                                color: '#4a5568',
+                                font: {
+                                    size: 14,
+                                    family: 'Inter'
+                                }
+                            },
+                            ticks: {
+                                color: '#718096',
+                                font: {
+                                    size: 12,
+                                    family: 'Inter'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false,
+                        }
+                    }
+                }
+            });
+        }
+
+        function fetchStockData(ticker, days) {
+            const apiKey = kBVNM0MjIfdSpxXLqn227umH5UAoBTG9;
+            if (!apiKey || apiKey === kBVNM0MjIfdSpxXLqn227umH5UAoBTG9) {
+                alert(kBVNM0MjIfdSpxXLqn227umH5UAoBTG9);
+                return;
+            }
+            const today = new Date();
+            const from = new Date(today);
+            from.setDate(today.getDate() - days);
+
+            const toDate = today.toISOString().slice(0, 10);
+            const fromDate = from.toISOString().slice(0, 10);
+
+
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker.toUpperCase()}/range/1/${days}/from/${fromDate}/to/${toDate}?adjusted=true&sort=asc&limit=120&apiKey=${apiKey}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.results && data.results.length > 0) {
+                        createStockChart(data.results, `${ticker.toUpperCase()} Price Over ${days} Days`);
+                    } else {
+                        alert(`No data found for ticker ${ticker.toUpperCase()} for the selected time range.`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stock data:', error);
+                    alert(`Error fetching data: ${error.message}`);
+                });
+        }
+
+        lookupButton.addEventListener('click', () => {
+            const ticker = stockTickerInput.value.trim();
+            const days = parseInt(timeFrameSelect.value);
+            if (ticker) {
+                fetchStockData(ticker, days);
+            } else {
+                alert('Please enter a stock ticker.');
+            }
+        });
+
+        function fetchRedditData() {
+            fetch('https://tradestie.com/api/v1/apps/reddit?date=2022-04-03')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        redditTableBody.innerHTML = '';
+                        const top5 = data.slice(0, 5);
+                        top5.forEach(item => {
+                            const row = document.createElement('tr');
+                            const tickerCell = document.createElement('td');
+                            const tickerLink = document.createElement('a');
+                            tickerLink.href = `https://finance.yahoo.com/quote/${item.ticker}`;
+                            tickerLink.textContent = item.ticker;
+                            tickerLink.target = '_blank';
+                            tickerLink.rel = 'noopener noreferrer';
+                            tickerLink.classList.add('text-blue-600', 'hover:text-blue-800', 'transition-colors', 'duration-200');
+                            tickerCell.appendChild(tickerLink);
+                            tickerCell.classList.add('px-6', 'py-4');
+
+                            const commentCountCell = document.createElement('td');
+                            commentCountCell.textContent = item.comment_count;
+                            commentCountCell.classList.add('px-6', 'py-4');
+
+                            const sentimentCell = document.createElement('td');
+                            let sentimentIcon = '';
+                            if (item.sentiment === 'Bullish') {
+                                sentimentIcon = '<i class="ph-bold ph-arrow-up text-green-500"></i>';
+                            } else if (item.sentiment === 'Bearish') {
+                                sentimentIcon = '<i class="ph-bold ph-arrow-down text-red-500"></i>';
+                            }
+                            sentimentCell.innerHTML = sentimentIcon;
+                            sentimentCell.classList.add('px-6', 'py-4');
+
+                            row.appendChild(tickerCell);
+                            row.appendChild(commentCountCell);
+                            row.appendChild(sentimentCell);
+                            redditTableBody.appendChild(row);
+                        });
+                    } else {
+                        redditTableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No data available.</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching Reddit data:', error);
+                    redditTableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">Failed to load data.</td></tr>';
+                });
+        }
+
+        fetchRedditData();
+
+        function fetchDogImages() {
+            const dogImagesUrl = 'https://dog.ceo/api/breeds/image/random/10';
+            fetch(dogImagesUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.message) {
+                        dogImages = data.message;
+                        dogImageContainer.innerHTML = '';
+                        dogImages.forEach((imageUrl, index) => {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = `Dog ${index + 1}`;
+                            img.classList.add('absolute', 'inset-0', 'object-cover', 'transition-opacity', 'duration-700', 'rounded-md');
+                            img.style.opacity = index === 0 ? '1' : '0';
+                            dogImageContainer.appendChild(img);
+                        });
+                        startCarousel();
+                    } else {
+                        alert('Failed to fetch dog images.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching dog images:', error);
+                    alert('Failed to fetch dog images.');
+                });
+        }
+
+        function startCarousel() {
+            setInterval(() => {
+                const currentImage = dogImageContainer.children[currentDogIndex];
+                currentImage.style.opacity = '0';
+                currentDogIndex = (currentDogIndex + 1) % dogImages.length;
+                const nextImage = dogImageContainer.children[currentDogIndex];
+                nextImage.style.opacity = '1';
+            }, 3000);
+        }
+
+        function fetchDogBreeds() {
+            const dogBreedsUrl = 'https://dogapi.dog/api/v2/breeds';
+            fetch(dogBreedsUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.data) {
+                        dogBreedButtonsContainer.innerHTML = '';
+                        Object.values(data.data).forEach(breed => {
+                            const button = document.createElement('button');
+                            button.textContent = breed.attributes.name;
+                            button.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-pink-600', 'hover:from-pink-700', 'hover:to-pink-800', 'text-white', 'font-bold', 'py-3', 'px-6', 'rounded-full', 'shadow-md', 'transition-all', 'duration-300', 'transform', 'hover:scale-105', 'dog-breed-button');
+                            button.setAttribute('data-breed-id', breed.id);
+                            dogBreedButtonsContainer.appendChild(button);
+                        });
+                        addBreedButtonListeners();
+                    } else {
+                        alert('Failed to fetch dog breeds.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching dog breeds:', error);
+                    alert('Failed to fetch dog breeds.');
+                });
+        }
+
+        function fetchDogBreedInfo(breedId) {
+            const dogBreedInfoUrl = `https://dogapi.dog/api/v2/breeds/${breedId}`;
+            fetch(dogBreedInfoUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.data) {
+                        const breed = data.data;
+                        dogBreedNameDisplay.textContent = breed.attributes.name;
+                        dogBreedDescriptionDisplay.textContent = breed.attributes.description;
+                        dogBreedLifeDisplay.textContent = `Life Span: ${breed.attributes.min_life_expectancy} - ${breed.attributes.max_life_expectancy} years`;
+                        dogInfoContainer.classList.remove('hidden');
+                    } else {
+                        alert('Failed to fetch dog breed information.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching dog breed information:', error);
+                    alert('Failed to fetch dog breed information.');
+                });
+        }
+
+        function addBreedButtonListeners() {
+            const breedButtons = document.querySelectorAll('.dog-breed-button');
+            breedButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const breedId = button.getAttribute('data-breed-id');
+                    fetchDogBreedInfo(breedId);
+                });
+            });
+        }
+
+        fetchDogImages();
+        fetchDogBreeds();
+
+        function initAnnyang() {
+            if (annyang) {
+                const commands = {
+                    'Hello': () => alert('Hello World!'),
+                    'Change the color to *color': (color) => {
+                        document.body.style.backgroundColor = color;
+                    },
+                    'Navigate to :page': (page) => {
+                        page = page.toLowerCase();
+                        if (page === 'home') {
+                            showPage('home-page');
+                        } else if (page === 'stocks') {
+                            showPage('stocks-page');
+                        } else if (page === 'dogs') {
+                            showPage('dogs-page');
+                        } else {
+                            alert('Invalid page. Please say "Home", "Stocks", or "Dogs".');
+                        }
+                    },
+                    'Lookup :stock': (stock) => {
+                        if (document.getElementById('stocks-page').classList.contains('hidden')) {
+                            showPage('stocks-page');
+                        }
+                        stockTickerInput.value = stock;
+                        fetchStockData(stock, 30);
+                    },
+                    'Load Dog Breed :dogBreed': (dogBreed) => {
+                        if (document.getElementById('dogs-page').classList.contains('hidden')) {
+                            showPage('dogs-page');
+                        }
+                        const breedButtons = document.querySelectorAll('.dog-breed-button');
+                        let found = false;
+                        breedButtons.forEach(button => {
+                            if (button.textContent.toLowerCase().includes(dogBreed.toLowerCase())) {
+                                button.click();
+                                found = true;
+                            }
+                        });
+                        if (!found) {
+                            alert('Idk about that dog breed.');
+                        }
+                    }
+                };
+
+                annyang.addCommands(commands);
+
+                turnOnListeningButton.addEventListener('click', () => {
+                    annyang.start();
+                    alert('Voice commands are on!  Say "Hello",  "Change the color to <color>", or "Navigate to <page>".');
+                });
+
+                turnOffListeningButton.addEventListener('click', () => {
+                    annyang.abort();
+                    alert('Voice commands deactivated.');
+                });
+            } else {
+                alert('Annyang is not available. Please make sure your browser supports it.');
+            }
+        }
+
+        initAnnyang();
+</script>
+</body>
+</html>
